@@ -1,10 +1,10 @@
-from django.shortcuts import render, get_object_or_404,reverse, HttpResponseRedirect
+from django.shortcuts import render, reverse, HttpResponseRedirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from recipe.models import Author, Recipe
 from recipe.forms import RecipeAddForm, AuthorAddForm, LoginForm
-
+from django.contrib.auth.models import User
 
 
 
@@ -33,7 +33,8 @@ def logged_outview(request):
 
 def index(request):
     recipes = Recipe.objects.all()
-    return render(request, 'index.html', {'recipes': recipes})
+    authors = Recipe.objects.all()
+    return render(request, 'index.html', {'recipes': recipes, 'authors': authors})
 
 @login_required
 def recipeadd(request):
@@ -64,12 +65,23 @@ def authoradd(request):
 
     if request.method == 'POST':
         form = AuthorAddForm(request.POST)
-        form.save()
-        return HttpResponseRedirect(reverse('homepage'))
+        if form.is_valid():
+            data = form.cleaned_data
+            User.objects.create(
 
+                username=data['username'],
+                password=data['password']
+            )
+            Author.objects.create(
+                name=data['name'],
+                bio=data['bio'],
+                user=User.objects.get(username=data['username'])
+
+            )
+            return HttpResponseRedirect(reverse('homepage'))
     form = AuthorAddForm()
 
-    return render (request, html, {'form': form})
+    return render(request, html, {'form': form})
 
 
 def recipe_detail(request, pk):

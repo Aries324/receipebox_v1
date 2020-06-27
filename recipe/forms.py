@@ -9,6 +9,7 @@ class RecipeAddForm(forms.Form):
     instructions = forms.CharField(widget=forms.Textarea)
     author = forms.ModelChoiceField(queryset=Author.objects.all())
 
+
 class AuthorAddForm(forms.Form):
     name = forms.CharField(max_length=50)
     bio = forms.CharField(widget=forms.Textarea)
